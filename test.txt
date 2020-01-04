@@ -1,2 +1,11 @@
+ (<
+{
 int a=5;
+{
 string v="r";
+{
+int k;
+}
+}
+print(s);
+}
