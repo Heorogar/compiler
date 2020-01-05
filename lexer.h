@@ -1,8 +1,8 @@
 #include<string>
 #include<fstream>
 #include<iostream>
-//#include<forward_list>
 #include<unordered_set>
+
 namespace cmplr_ {
 
 class lexer {
@@ -22,53 +22,38 @@ class lexer {
 	};
 
 public:
-	struct listNode {
-		std::string s;
-
-		keywords k;
-		listNode *next;
-	public:
-		listNode(std::string s, keywords k, listNode *next) {
-
-			this->s = s;
-			this->k = k;
-			this->next = next;
-			std::cout << "constructor" << std::endl;
-		}
-		//add insertion method here
-	};
 	struct treeNode {
-		struct childNode {
 
-			treeNode *child;
-			childNode *next;
+		struct symbolTableNode {
+		private:
+			keywords tokenType;
+		public:
+			std::string tokenValue; //move to private on print method deletion
+			symbolTableNode *nextNode;
+
+			symbolTableNode(std::string tokenValue, keywords tokenType);
+			//add insertion method here
 		};
-		childNode *childList;
-		listNode *symbolTable;
+
+		struct childNode {
+			treeNode *child;
+			childNode *nextNode;
+			childNode();
+		};
+		childNode *listOfChildrenHeadNode;
+		symbolTableNode *symbolTableHeadNode; //implemented as a list
 		std::unordered_set<std::string> stringsTable;
 	};
-	lexer();
+	lexer(std::string inputFilePath);
 	treeNode* scanFile(std::string inputFilePath);
 
-	void print(treeNode *n) {
-		if (n == NULL)
-			return;
-		listNode *temp = n->symbolTable;
-		while (temp != NULL) {
-
-//			std::cout << i.k << std::endl;
-			std::cout << temp->s;
-			temp = temp->next;
-		}
-		std::cout << std::endl;
-		print(n->childList->child);
-	}
-
+	void print(treeNode *n);
 private:
 	std::ifstream* addIdNode(std::ifstream *inputStream, treeNode **root,
-			char inputChar, listNode **temp);
+			char inputChar, treeNode::symbolTableNode **temp);
 	treeNode* buildTree(std::ifstream *inputStream, treeNode *root);
-	listNode* insert(listNode *head, treeNode *root, std::string s, keywords k);
+	treeNode::symbolTableNode* insert(treeNode::symbolTableNode *head,
+			treeNode *root, std::string s, keywords k);
 }
 ;
 

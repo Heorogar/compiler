@@ -1,7 +1,35 @@
 #include"lexer.h"
 //#include<char_traits>
 
-cmplr_::lexer::lexer() {
+void cmplr_::lexer::print(cmplr_::lexer::treeNode *n) {
+	if (n == NULL)
+		return;
+	treeNode::symbolTableNode *temp = n->symbolTableHeadNode;
+	while (temp != NULL) {
+
+//			std::cout << i.k << std::endl;
+		std::cout << temp->tokenValue;
+		temp = temp->nextNode;
+	}
+	std::cout << std::endl;
+	print(n->listOfChildrenHeadNode->child);
+}
+
+cmplr_::lexer::lexer(std::string inputFilePath) {
+	treeNode *n = scanFile(inputFilePath);
+	std::cout << "here begineth the book of the tales of symbol table"
+			<< std::endl;
+	print(n);
+
+}
+
+cmplr_::lexer::treeNode::symbolTableNode::symbolTableNode(
+		std::string tokenValue, keywords tokenType) :
+		tokenType(tokenType), tokenValue(tokenValue), nextNode(NULL) {
+}
+
+cmplr_::lexer::treeNode::childNode::childNode() :
+		child(NULL), nextNode(NULL) {
 }
 
 cmplr_::lexer::treeNode* cmplr_::lexer::scanFile(std::string inputFilePath) {
@@ -18,7 +46,7 @@ cmplr_::lexer::treeNode* cmplr_::lexer::scanFile(std::string inputFilePath) {
 
 cmplr_::lexer::treeNode* cmplr_::lexer::buildTree(std::ifstream *inputStream,
 		treeNode *root) {
-	listNode *temp = root->symbolTable;
+	treeNode::symbolTableNode *temp = root->symbolTableHeadNode;
 
 	while (!inputStream->eof()) {
 
@@ -31,15 +59,16 @@ cmplr_::lexer::treeNode* cmplr_::lexer::buildTree(std::ifstream *inputStream,
 		if (inputChar == '{') {
 //			treeNode *n = new treeNode;
 //			root->next = n;
-			if (root->childList == NULL) {
-				root->childList = new treeNode::childNode;
-				root->childList->child = buildTree(inputStream, new treeNode);
+			if (root->listOfChildrenHeadNode == NULL) {
+				root->listOfChildrenHeadNode = new treeNode::childNode;
+				root->listOfChildrenHeadNode->child = buildTree(inputStream,
+						new treeNode);
 			} else {
-				treeNode::childNode *temp = root->childList;
-				while (temp->next != NULL) {
-					temp = temp->next;
+				treeNode::childNode *temp = root->listOfChildrenHeadNode;
+				while (temp->nextNode != NULL) {
+					temp = temp->nextNode;
 				}
-				temp->next = new treeNode::childNode;
+				temp->nextNode = new treeNode::childNode;
 				temp->child = buildTree(inputStream, new treeNode);
 			}
 		}
@@ -108,7 +137,7 @@ cmplr_::lexer::treeNode* cmplr_::lexer::buildTree(std::ifstream *inputStream,
 
 //return root or return shit
 std::ifstream* cmplr_::lexer::addIdNode(std::ifstream *inputStream,
-		treeNode **root, char inputChar, listNode **temp) {
+		treeNode **root, char inputChar, treeNode::symbolTableNode **temp) {
 	std::string keywordSoFar = "";
 	keywordSoFar += inputChar;
 
@@ -142,8 +171,9 @@ std::ifstream* cmplr_::lexer::addIdNode(std::ifstream *inputStream,
 	return inputStream;
 }
 
-cmplr_::lexer::listNode* cmplr_::lexer::insert(listNode *head, treeNode *root,
-		std::string s, keywords k) {
+cmplr_::lexer::treeNode::symbolTableNode* cmplr_::lexer::insert(
+		treeNode::symbolTableNode *head, treeNode *root, std::string s,
+		keywords k) {
 //	if (root == NULL)
 //		root = new listNode(s, k, NULL);
 //	listNode *temp = root;
@@ -151,20 +181,15 @@ cmplr_::lexer::listNode* cmplr_::lexer::insert(listNode *head, treeNode *root,
 //		temp = temp->next;
 //	temp->next = new listNode(s, k, NULL);
 //	return root;
-	if (root->symbolTable == NULL) {
-		root->symbolTable = new listNode(s, k, NULL);
-		return head = root->symbolTable;
+	if (root->symbolTableHeadNode == NULL) {
+		root->symbolTableHeadNode = new treeNode::symbolTableNode(s, k);
+		return head = root->symbolTableHeadNode;
 	}
-	head->next = new listNode(s, k, NULL); //third argument not needed?
-	return head->next;
+	head->nextNode = new treeNode::symbolTableNode(s, k); //third argument not needed?
+	return head->nextNode;
 }
 
 int main() {
-	cmplr_::lexer l;
-	cmplr_::lexer::treeNode *n = l.scanFile(
-			"/home/invictus/eclipse-workspace/compiler/src/test.txt");
-	std::cout << "here begineth the book of the tales of symbol table"
-			<< std::endl;
-	l.print(n);
+	cmplr_::lexer l("/home/invictus/eclipse-workspace/compiler/src/test.txt");
 
 }
