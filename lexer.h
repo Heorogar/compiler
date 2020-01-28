@@ -21,40 +21,66 @@ class lexer {
 		parenthesis
 	};
 
-public:
 	struct treeNode {
 
 		struct symbolTableNode {
-		private:
 			keywords tokenType;
-		public:
-			std::string tokenValue; //move to private on print method deletion
+			std::string tokenValue;
 			symbolTableNode *nextNode;
 
 			symbolTableNode(std::string tokenValue, keywords tokenType);
-			//add insertion method here
+			~symbolTableNode() {
+				delete nextNode;
+			}
+
+			symbolTableNode* insert(treeNode::symbolTableNode *head,
+					treeNode *root, std::string s, keywords k);
 		};
 
 		struct childNode {
 			treeNode *child;
 			childNode *nextNode;
-			childNode();
-		};
-		childNode *listOfChildrenHeadNode;
-		symbolTableNode *symbolTableHeadNode; //implemented as a list
-		std::unordered_set<std::string> stringsTable;
-	};
-	lexer(std::string inputFilePath);
-	treeNode* scanFile(std::string inputFilePath);
 
+			childNode();
+			~childNode() {
+				delete child;
+				delete nextNode;
+			}
+		};
+
+		childNode *listOfChildrenHeadNode;
+		symbolTableNode *symbolTableHeadNode; //implemented as a list since the built-in stl list container's emplace function was calling the copy constructor; tldr: efficiency
+		std::unordered_set<std::string> stringsTable;
+
+		~treeNode() {
+			stringsTable.clear();
+			symbolTableNode *temp, *foo = symbolTableHeadNode;
+			while (temp) {
+				temp = temp->nextNode;
+				delete foo;
+				foo = temp;
+			}
+		}
+	};
+
+	treeNode* scanFile(std::string inputFilePath);
 	void print(treeNode *n);
-private:
-	std::ifstream* addIdNode(std::ifstream *inputStream, treeNode **root,
+
+	void addWordNode(std::ifstream *inputStream, treeNode **root,
 			char inputChar, treeNode::symbolTableNode **temp);
 	treeNode* buildTree(std::ifstream *inputStream, treeNode *root);
-	treeNode::symbolTableNode* insert(treeNode::symbolTableNode *head,
-			treeNode *root, std::string s, keywords k);
-}
-;
+
+public:
+	treeNode *lexerRootNode;
+	lexer(std::string inputFilePath);
+	~lexer() {
+		treeNode::childNode *temp, *foo = lexerRootNode->listOfChildrenHeadNode;
+		while (temp) {
+			temp = temp->nextNode;
+			delete foo;
+			foo = temp;
+		}
+	}
+};
 
 }
