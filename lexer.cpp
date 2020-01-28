@@ -4,8 +4,8 @@ void cmplr_::lexer::print(cmplr_::lexer::treeNode *n) {
 	if (n == NULL)
 		return;
 
-	for (std::string a : n->stringsTable)
-		std::cout << a << std::endl;
+//	for (std::string a : n->stringsTable)
+//		std::cout << a << std::endl;
 
 	treeNode::symbolTableNode *temp = n->symbolTableHeadNode;
 
@@ -15,24 +15,50 @@ void cmplr_::lexer::print(cmplr_::lexer::treeNode *n) {
 		temp = temp->nextNode;
 	}
 	std::cout << std::endl;
-	print(n->listOfChildrenHeadNode->child);
+	if (n->listOfChildrenHeadNode)
+		print(n->listOfChildrenHeadNode->child);
+	else
+		return;
+	if (n->listOfChildrenHeadNode->nextNode)
+		print(n->listOfChildrenHeadNode->nextNode->child);
+	else
+		return;
 }
 
 cmplr_::lexer::lexer(std::string inputFilePath) {
 	lexerRootNode = scanFile(inputFilePath);
 	std::cout << "here begineth the book of the tales of symbol table"
 			<< std::endl;
-	print(lexerRootNode);
+//	print(lexerRootNode);
 
+}
+
+cmplr_::lexer::~lexer() {
+	delete lexerRootNode;
+}
+
+cmplr_::lexer::treeNode::~treeNode() {
+	stringsTable.clear(); //is it neccessary? linear complexity plus does it do the same as delete? it should be allocated on the heap since tree node is always heap allocated so it shouldn't be auto freed so can we free the memory in some other way
+//delete is recursive
+	delete symbolTableHeadNode;
+	delete listOfChildrenHeadNode;
 }
 
 cmplr_::lexer::treeNode::symbolTableNode::symbolTableNode(
 		std::string tokenValue, keywords tokenType) :
 		tokenType(tokenType), tokenValue(tokenValue), nextNode(NULL) {
 }
+cmplr_::lexer::treeNode::symbolTableNode::~symbolTableNode() {
+	delete nextNode;
+}
 
 cmplr_::lexer::treeNode::childNode::childNode() :
 		child(NULL), nextNode(NULL) {
+}
+
+cmplr_::lexer::treeNode::childNode::~childNode() {
+	delete child;
+	delete nextNode;
 }
 
 cmplr_::lexer::treeNode* cmplr_::lexer::scanFile(std::string inputFilePath) {
@@ -72,7 +98,7 @@ cmplr_::lexer::treeNode* cmplr_::lexer::buildTree(std::ifstream *inputStream,
 					temp = temp->nextNode;
 				}
 				temp->nextNode = new treeNode::childNode;
-				temp->child = buildTree(inputStream, new treeNode);
+				temp->nextNode->child = buildTree(inputStream, new treeNode);
 			}
 		}
 		if (inputChar == '}') {
@@ -186,6 +212,9 @@ cmplr_::lexer::treeNode::symbolTableNode* cmplr_::lexer::treeNode::symbolTableNo
 }
 
 int main() {
-	cmplr_::lexer* l=new cmplr_::lexer("/home/invictus/eclipse-workspace/compiler/src/test.txt");
+	cmplr_::lexer *l = new cmplr_::lexer(
+			"/home/invictus/eclipse-workspace/compiler/src/test.txt");
+	l->print(l->lexerRootNode);
 	delete l;
+	std::cout << "foo" << std::endl;
 }

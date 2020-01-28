@@ -29,9 +29,7 @@ class lexer {
 			symbolTableNode *nextNode;
 
 			symbolTableNode(std::string tokenValue, keywords tokenType);
-			~symbolTableNode() {
-				delete nextNode;
-			}
+			~symbolTableNode();
 
 			symbolTableNode* insert(treeNode::symbolTableNode *head,
 					treeNode *root, std::string s, keywords k);
@@ -42,45 +40,27 @@ class lexer {
 			childNode *nextNode;
 
 			childNode();
-			~childNode() {
-				delete child;
-				delete nextNode;
-			}
+			~childNode();
 		};
 
 		childNode *listOfChildrenHeadNode;
 		symbolTableNode *symbolTableHeadNode; //implemented as a list since the built-in stl list container's emplace function was calling the copy constructor; tldr: efficiency
 		std::unordered_set<std::string> stringsTable;
 
-		~treeNode() {
-			stringsTable.clear();
-			symbolTableNode *temp, *foo = symbolTableHeadNode;
-			while (temp) {
-				temp = temp->nextNode;
-				delete foo;
-				foo = temp;
-			}
-		}
+		~treeNode();
 	};
 
 	treeNode* scanFile(std::string inputFilePath);
-	void print(treeNode *n);
 
 	void addWordNode(std::ifstream *inputStream, treeNode **root,
 			char inputChar, treeNode::symbolTableNode **temp);
 	treeNode* buildTree(std::ifstream *inputStream, treeNode *root);
 
 public:
+	void print(treeNode *n);
 	treeNode *lexerRootNode;
 	lexer(std::string inputFilePath);
-	~lexer() {
-		treeNode::childNode *temp, *foo = lexerRootNode->listOfChildrenHeadNode;
-		while (temp) {
-			temp = temp->nextNode;
-			delete foo;
-			foo = temp;
-		}
-	}
+	~lexer();
 };
 
 }
