@@ -1,5 +1,5 @@
 #include"lexer.h"
-
+//#pragma once
 void cmplr_::lexer::print(cmplr_::lexer::treeNode *n) {
 	if (n == NULL)
 		return;
@@ -37,8 +37,12 @@ cmplr_::lexer::~lexer() {
 	delete lexerRootNode;
 }
 
+cmplr_::lexer::treeNode::treeNode() :
+		listOfChildrenHeadNode(NULL), symbolTableHeadNode(NULL) {
+
+}
+
 cmplr_::lexer::treeNode::~treeNode() {
-	stringsTable.clear(); //is it neccessary? linear complexity plus does it do the same as delete? it should be allocated on the heap since tree node is always heap allocated so it shouldn't be auto freed so can we free the memory in some other way
 //delete is recursive
 	delete symbolTableHeadNode;
 	delete listOfChildrenHeadNode;
@@ -106,57 +110,77 @@ cmplr_::lexer::treeNode* cmplr_::lexer::buildTree(std::ifstream *inputStream,
 		}
 		if ((inputChar >= 97 && inputChar <= 122)
 				|| (inputChar >= 65 && inputChar <= 90)) {
-			addWordNode(inputStream, &root, inputChar, &temp);
+//			addWordNode(inputStream, &root, inputChar, &temp);
+			word w;
+			temp = w.insertTreeNode(root, temp, inputStream, inputChar);
 		} else if (inputChar == '+' || inputChar == '-' || inputChar == '*'
 				|| inputChar == '/') {
-			keywordSoFar += inputChar;
-			temp = temp->insert(temp, root, keywordSoFar,
-					keywords::arithmetic_operators);
+//			keywordSoFar += inputChar;
+//			temp = temp->insert(temp, root, keywordSoFar,
+//					keywords::arithmetic_operators);
+			arithmeticOperators a;
+			temp = a.insertTreeNode(root, temp, inputStream, inputChar);
 		} else if (inputChar == '=') {
-			keywordSoFar += inputChar;
-			temp = temp->insert(temp, root, keywordSoFar,
-					keywords::assignment_operator);
+//			keywordSoFar += inputChar;
+//			temp = temp->insert(temp, root, keywordSoFar,
+//					keywords::assignment_operator);
+			assignmentOperator p;
+			temp = p.insertTreeNode(root, temp, inputStream, inputChar);
 		} else if (inputChar == '"') {
-			keywordSoFar += inputChar;
-			temp = temp->insert(temp, root, keywordSoFar, keywords::quote);
-			keywordSoFar = "";
-			while (inputStream->peek() != '"') {
-				inputChar = inputStream->get();
-				keywordSoFar += inputChar;
-			}
-
-			if (keywordSoFar != "") {
-				temp = temp->insert(temp, root, keywordSoFar,
-						keywords::string_literal);
-
-				inputChar = inputStream->get();
-				keywordSoFar = "";
-				keywordSoFar += inputChar;
-
-				temp = temp->insert(temp, root, keywordSoFar, keywords::quote);
-			}
+//			keywordSoFar += inputChar;
+//			temp = temp->insert(temp, root, keywordSoFar, keywords::quote);
+//			keywordSoFar = "";
+//			while (inputStream->peek() != '"') {
+//				inputChar = inputStream->get();
+//				keywordSoFar += inputChar;
+//			}
+//
+//			if (keywordSoFar != "") {
+//				temp = temp->insert(temp, root, keywordSoFar,
+//						keywords::string_literal);
+//
+//				inputChar = inputStream->get();
+//				keywordSoFar = "";
+//				keywordSoFar += inputChar;
+//
+//				temp = temp->insert(temp, root, keywordSoFar, keywords::quote);
+//			}
+			quote q;
+			temp = q.insertTreeNode(root, temp, inputStream, inputChar);
+			stringLiteral l;
+			inputChar = inputStream->get();
+			temp = l.insertTreeNode(root, temp, inputStream, inputChar); //garbage-in-garbage out principle; if the second quote is not found out comes the garbage
+			inputChar = inputStream->get();
+			temp = q.insertTreeNode(root, temp, inputStream, inputChar);
 		} else if (inputChar == '>' || inputChar == '<') {
-			keywordSoFar += inputChar;
-			temp = temp->insert(temp, root, keywordSoFar,
-					keywords::relational_operators);
+//			keywordSoFar += inputChar;
+//			temp = temp->insert(temp, root, keywordSoFar,
+//					keywords::relational_operators);
+			relationalOperator r;
+			temp = r.insertTreeNode(root, temp, inputStream, inputChar);
 		} else if (inputChar >= 48 && inputChar <= 57) {
-
-			keywordSoFar += inputChar;
-
-			while (inputStream->peek() >= 48 && inputStream->peek() <= 57) {
-				inputChar = inputStream->get();
-				keywordSoFar += inputChar;
-			}
-			temp = temp->insert(temp, root, keywordSoFar, keywords::number);
-
+//
+//			keywordSoFar += inputChar;
+//
+//			while (inputStream->peek() >= 48 && inputStream->peek() <= 57) {
+//				inputChar = inputStream->get();
+//				keywordSoFar += inputChar;
+//			}
+//			temp = temp->insert(temp, root, keywordSoFar, keywords::number);
+			number n;
+			temp = n.insertTreeNode(root, temp, inputStream, inputChar);
 		} else if (inputChar == '(' || inputChar == ')') {
-			keywordSoFar += inputChar;
-			temp = temp->insert(temp, root, keywordSoFar,
-					keywords::parenthesis);
+//			keywordSoFar += inputChar;
+//			temp = temp->insert(temp, root, keywordSoFar,
+//					keywords::parenthesis);
+			parethesis g;
+			temp = g.insertTreeNode(root, temp, inputStream, inputChar);
 		} else if (inputChar == ';') {
-			keywordSoFar += inputChar;
-			temp = temp->insert(temp, root, keywordSoFar,
-					keywords::eol_operator);
+//			keywordSoFar += inputChar;
+//			temp = temp->insert(temp, root, keywordSoFar,
+//					keywords::eol_operator);
+			eolOperator e;
+			temp = e.insertTreeNode(root, temp, inputStream, inputChar);
 		}
 	}
 
@@ -211,10 +235,45 @@ cmplr_::lexer::treeNode::symbolTableNode* cmplr_::lexer::treeNode::symbolTableNo
 	return head->nextNode;
 }
 
+class a {
+public:
+	a() {
+		std::cout << "a constructor" << std::endl;
+	}
+	~a() {
+		std::cout << "a destructor" << std::endl;
+	}
+};
+
+class b: public a {
+public:
+	b() {
+		std::cout << "b constructor" << std::endl;
+	}
+	~b() {
+		std::cout << "b destructor" << std::endl;
+	}
+};
+
 int main() {
-	cmplr_::lexer *l = new cmplr_::lexer(
-			"/home/invictus/eclipse-workspace/compiler/src/test.txt");
-	l->print(l->lexerRootNode);
-	delete l;
-	std::cout << "foo" << std::endl;
+//	cmplr_::lexer *l = new cmplr_::lexer(
+//			"/home/invictus/eclipse-workspace/compiler/src/test.txt");
+//	l->print(l->lexerRootNode);
+//	delete l;
+//	std::cout << "foo" << std::endl;
+	a foo = b();
+	std::cout << "scope end" << std::endl;
+}
+
+cmplr_::lexer::treeNode::symbolTableNode* cmplr_::lexer::lexeme::insertTreeNodeDefault(
+		treeNode *root, treeNode::symbolTableNode *head, std::string tokenValue,
+		keywords tokenType) {
+	if (head == NULL) {
+		root->symbolTableHeadNode = new treeNode::symbolTableNode(tokenValue,
+				tokenType);
+		return head = root->symbolTableHeadNode;
+	}
+	head->nextNode = new treeNode::symbolTableNode(tokenValue, tokenType);
+	return head->nextNode;
+
 }
