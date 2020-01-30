@@ -1,5 +1,5 @@
 # PERSEUS COMPILER
 
-## LEXER
+## 1. LEXER
 
 
